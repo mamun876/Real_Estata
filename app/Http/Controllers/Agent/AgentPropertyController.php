@@ -11,7 +11,8 @@
 use App\Models\PackagePlan;
 use App\Models\PropertyType;
  use App\Models\User;
- use Intervention\Image\Facades\Image;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Intervention\Image\Facades\Image;
  use Haruncpi\LaravelIdGenerator\IdGenerator;
  use Carbon\Carbon;
  use Illuminate\Support\Facades\Auth;
@@ -471,6 +472,25 @@ public function AgentUpdatePropertyThambnail(Request $request){
         );
 
         return redirect()->route('agent.all.property')->with($notification);  
+    }// End Method 
+
+    public function PackageHistory(){
+
+        $id = Auth::user()->id;
+        $packagehistory = PackagePlan::where('user_id',$id)->get();
+        return view('agent.package.package_history',compact('packagehistory'));
+
+    }// End Method 
+    public function AgentPackageInvoice($id){
+
+        $packagehistory = PackagePlan::where('id',$id)->first();
+
+        $pdf = Pdf::loadView('agent.package.package_history_invoice', compact('packagehistory'))->setPaper('a4')->setOption([
+            'tempDir' => public_path(),
+            'chroot' => public_path(),
+        ]);
+        return $pdf->download('invoice.pdf');
+
     }// End Method 
 
 
