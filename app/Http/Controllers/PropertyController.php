@@ -5,13 +5,18 @@ namespace App\Http\Controllers;
 use App\Models\Amenities;
 use App\Models\Facility;
 use App\Models\MultiImage;
+use App\Models\PackagePlan;
 use App\Models\Property;
+use App\Models\PropertyMessage;
 use App\Models\PropertyType;
+use App\Models\State;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Intervention\Image\Facades\Image;
  use Haruncpi\LaravelIdGenerator\IdGenerator;
  use Carbon\Carbon;
+
 
 class PropertyController extends Controller
 {
@@ -27,7 +32,11 @@ class PropertyController extends Controller
         $propertytype = PropertyType::latest()->get();
         $amenities = Amenities::latest()->get();
         $activeAgent = User::where('status','active')->where('role','agent')->latest()->get();
-        return view('backend.property.add_property',compact('propertytype','amenities','activeAgent'));
+        $propertytype = PropertyType::latest()->get();
+         $pstate = State::latest()->get();
+         $amenities = Amenities::latest()->get();
+         $activeAgent = User::where('status','active')->where('role','agent')->latest()->get();
+         return view('backend.property.add_property',compact('propertytype','amenities','activeAgent','pstate'));
 
     }// End Method 
 
@@ -404,6 +413,30 @@ public function InactiveProperty(Request $request){
 
     return redirect()->route('all.property')->with($notification); 
 
+
+}// End Method 
+public function AdminPackageHistory(){
+
+    $packagehistory = PackagePlan::latest()->get();
+    return view('backend.package.package_history',compact('packagehistory'));
+
+
+   }// End Method 
+   public function PackageInvoice($id){
+
+    $packagehistory = PackagePlan::where('id',$id)->first();
+
+    $pdf = Pdf::loadView('backend.package.package_history_invoice', compact('packagehistory'))->setPaper('a4')->setOption([
+        'tempDir' => public_path(),
+        'chroot' => public_path(),
+    ]);
+    return $pdf->download('invoice.pdf');
+
+}// End Method 
+public function AdminPropertyMessage(){
+
+    $usermsg = PropertyMessage::latest()->get();
+    return view('backend.message.all_message',compact('usermsg'));
 
 }// End Method 
 

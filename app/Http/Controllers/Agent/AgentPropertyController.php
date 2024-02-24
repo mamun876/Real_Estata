@@ -9,8 +9,10 @@
  use App\Models\Facility;
  use App\Models\Amenities;
 use App\Models\PackagePlan;
+use App\Models\PropertyMessage;
 use App\Models\PropertyType;
- use App\Models\User;
+use App\Models\State;
+use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Intervention\Image\Facades\Image;
  use Haruncpi\LaravelIdGenerator\IdGenerator;
@@ -31,6 +33,7 @@ use Illuminate\Support\Facades\DB;
 
         $propertytype = PropertyType::latest()->get();
         $amenities = Amenities::latest()->get();
+        $pstate = State::latest()->get();
         $id = Auth::user()->id;
         $property = User::where('role','agent')->where('id',$id)->first();
         $pcount = $property->credit;
@@ -40,7 +43,8 @@ use Illuminate\Support\Facades\DB;
            return redirect()->route('buy.package');
         }else{
 
-            return view('agent.property.add_property',compact('propertytype','amenities'));
+          
+            return view('agent.property.add_property',compact('propertytype','amenities','pstate'));
         }
 
     }// End Method 
@@ -156,11 +160,11 @@ use Illuminate\Support\Facades\DB;
         $property_ami = explode(',', $type);
 
         $multiImage = MultiImage::where('property_id',$id)->get();
-
+        $pstate = State::latest()->get();
         $propertytype = PropertyType::latest()->get();
         $amenities = Amenities::latest()->get();
 
-        return view('agent.property.edit_property',compact('property','propertytype','amenities','property_ami','multiImage','facilities'));
+        return view('agent.property.edit_property',compact('property','propertytype','amenities','property_ami','multiImage','facilities','pstate'));
 
     }// End Method 
 
@@ -492,6 +496,22 @@ public function AgentUpdatePropertyThambnail(Request $request){
         return $pdf->download('invoice.pdf');
 
     }// End Method 
+    public function AgentPropertyMessage(){
+
+        $id = Auth::user()->id;
+        $usermsg = PropertyMessage::where('agent_id',$id)->get();
+        return view('agent.message.all_message',compact('usermsg'));
+
+    }// End Method 
+    public function AgentMessageDetails($id){
+
+        $uid = Auth::user()->id;
+        $usermsg = PropertyMessage::where('agent_id',$uid)->get();
+
+        $msgdetails = PropertyMessage::findOrFail($id);
+        return view('agent.message.message_details',compact('usermsg','msgdetails'));
+
+    }// End Method  
 
 
 
