@@ -4,21 +4,25 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\View\View;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class AuthenticatedSessionController extends Controller
 {
     /**
      * Display the login view.
      */
-    public function create(): View
+    public function create(): Response
     {
-        return view('auth.login');
+        return Inertia::render('Auth/Login', [
+            'canResetPassword' => Route::has('password.request'),
+            'status' => session('status'),
+        ]);
     }
 
     /**
@@ -27,26 +31,10 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
-        $id = Auth::user()->id;
-        $adminData = User::find($id);
-        $username = $adminData->name;
 
         $request->session()->regenerate();
-        $notification = array(
-            'message' => 'User '.$username.' Login Successfully',
-            'alert-type' => 'info'
-        ); 
-        $url='';
-        if($request->user()->role==='admin'){
-            $url='/admin/dashboard';
-        }elseif($request->user()->role==='agent'){
-            $url='/agent/dashboard';
 
-        }elseif($request->user()->role=='user'){
-            $url='/dashboard';
-        }
-
-        return redirect()->intended($url)->with($notification);
+        return redirect()->intended(RouteServiceProvider::HOME);
     }
 
     /**
